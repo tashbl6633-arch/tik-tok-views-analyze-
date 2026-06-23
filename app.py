@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from openai import OpenAI
+import google.generativeai as genai
 
 # 1. Page Configuration & Styling
 st.set_page_config(page_title="International Growth Engine", page_icon="🚀", layout="wide")
@@ -32,20 +32,11 @@ if st.button("Generate Solution Blueprint"):
     else:
         with st.spinner("Analyzing audio flow, script, and global trends..."):
             try:
-                # Initialize OpenAI safely
-                api_key = os.environ.get("OPENAI_API_KEY", "YOUR_MOCK_KEY_FOR_TESTING")
-                client = OpenAI(api_key=api_key)
+                # Initialize Google Gemini safely using your key
+                api_key = os.environ.get("GEMINI_API_KEY", "YOUR_MOCK_KEY_FOR_TESTING")
                 
-                # Rigid instructions forcing ONLY actionable answers
-                system_instruction = (
-                    "You are an expert TikTok Growth Engine optimizing content for international markets (US/UK/Global) to hit 2,000-3,000 views.\n"
-                    "CRITICAL: Do not tell the user what they did wrong. Do not give negative feedback. Provide ONLY action steps."
-                )
-                
-                user_prompt = f"Analyze this simulated video stream link: {video_url}. Provide exactly 3 international hooks, 1 trending audio sound setup, and 1 global video re-edit concept."
-                
-                # Mock fallback if api key isn't set yet so the UI doesn't crash
                 if api_key == "YOUR_MOCK_KEY_FOR_TESTING":
+                    # Fallback preview layout
                     output_text = """### 🚀 Target Goal: 2,000 – 3,000 Views (International Blueprint)
                     
 ### 🪝 3 International Hooks (Copy-Paste)
@@ -59,14 +50,24 @@ if st.button("Generate Solution Blueprint"):
 ### 🎬 International Video Concept (The Re-Edit)
 * **The Action:** Open the video instantly with a 0.5-second fast-cut product action macro shot before showing text. Place English captions strictly in the center dead-zone so it clears the international TikTok UI sidebars."""
                 else:
-                    response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[
-                            {"role": "system", "content": system_instruction},
-                            {"role": "user", "content": user_prompt}
-                        ]
+                    # Configuring Google AI
+                    genai.configure(api_key=api_key)
+                    
+                    # Rigid instructions forcing ONLY actionable answers
+                    system_instruction = (
+                        "You are an expert TikTok Growth Engine optimizing content for international markets (US/UK/Global) to hit 2,000-3,000 views.\n"
+                        "CRITICAL: Do not tell the user what they did wrong. Do not give negative feedback. Provide ONLY action steps."
                     )
-                    output_text = response.choices[0].message.content
+                    
+                    model = genai.GenerativeModel(
+                        model_name="gemini-1.5-flash",
+                        system_instruction=system_instruction
+                    )
+                    
+                    user_prompt = f"Analyze this simulated video stream link: {video_url}. Provide exactly 3 international hooks, 1 trending audio sound setup, and 1 global video re-edit concept."
+                    
+                    response = model.generate_content(user_prompt)
+                    output_text = response.text
 
                 # Output the clean, non-bullshit solution boxes
                 st.success("Analysis Complete! Here is your Action Plan:")
