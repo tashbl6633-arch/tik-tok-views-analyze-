@@ -1,2 +1,2 @@
-pip install streamlit openai
-streamlit run app.py
+streamlit
+google-generativeai
